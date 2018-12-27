@@ -14,5 +14,8 @@ Rectangle {
         id: map
         anchors.fill:parent
     }
+    Text{
+        text: "KmlMap test (Javascript draw)"
+    }
 }
 

@@ -27,13 +27,20 @@ DESTDIR = $${PROJECT_LIBS}
 message($$DESTDIR)
 
 macx{
-   # QMAKE_MAC_SDK = macosx10.11
+    #QMAKE_MAC_SDK = macosx10.11
 } 
 
 DEFINES += HAVE_EXPAT_CONFIG_H
 DEFINES += HAVE_MEMMOVE
 
-QMAKE_CXXFLAGS_WARN_OFF -= -Wunused-parameter
+#QMAKE_CXXFLAGS_WARN_OFF -= -Wunused-parameter
+#QMAKE_CXXFLAGS += -Wno-unused-parameter
+#QMAKE_CXXFLAGS_WARN_OFF -= -Wunused-parameter
+#QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
+#QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-parameter
+
+QMAKE_CXXFLAGS_WARN_ON += -w
+QMAKE_CFLAGS_WARN_ON += -w
 
 HEADERS += \
     expat/lib/ascii.h \

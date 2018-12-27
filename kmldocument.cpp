@@ -14,6 +14,7 @@
 using namespace QtKml;
 
 KmlDocumentPrivate::~KmlDocumentPrivate(){
+    qDebug() << "~KmlDocumentPrivate" << this;
     if(m_monitor != nullptr)
         m_monitor->documentDeleted(m_identifier);
 }
@@ -50,57 +51,52 @@ Coord KmlDocumentPrivate::centerPoint() const{
     //return p.fromLatLngToPoint(lat, lon, zoom);
 }
 
-void KmlDocumentPrivate::renderAll(QImage& image, const QSize& size, qreal zoom, const QPointF& centerPoint, bool erase) {
-    if(size != image.size()){
-        image = QImage(size, QImage::Format_ARGB32);
-    }
 
+void KmlDocumentPrivate::renderAll(QPixmap& image, const QSize& size, qreal zoom, const QPointF& centerPoint, bool erase) {
+    if(size != image.size()){
+        image = QPixmap(size);
+    }
     if(erase)
         image.fill(Qt::transparent);
+
+    QPainter painter(&image);
+
+    if(!painter.isActive()){
+        qWarning() << "Painter failed" << image.size() << image.devicePixelRatio();
+        return;
+    }
+
+    renderAll(painter, QRect({0, 0}, size), zoom, centerPoint);
+}
+
+
+void KmlDocumentPrivate::renderAll(QPainter& painter, const QRect& rect, qreal zoom, const QPointF& centerPoint){
 
     //Here we calculate bounding boxes to know if shapes are in then view port and it is feasible to render them
     const MercatorProjection mp;
     const auto b = bounds();
-    const auto tl = mp.fromLatLngToPoint(b.topLeft(), zoom) - centerPoint + QPointF(size.width() * 0.5, size.height() * 0.5);
-    const auto br = mp.fromLatLngToPoint(b.bottomRight(), zoom) - centerPoint + QPointF(size.width() * 0.5, size.height() * 0.5);
+    const auto tl = mp.fromLatLngToPoint(b.topLeft(), zoom) - centerPoint + QPointF(rect.width() * 0.5, rect.height() * 0.5);
+    const auto br = mp.fromLatLngToPoint(b.bottomRight(), zoom) - centerPoint + QPointF(rect.width() * 0.5, rect.height() * 0.5);
     const QRectF bbox(tl, br);
-    const QRectF box(QPointF(0, 0), size);
+    const QRectF box(QPointF(0, 0), rect.size());
 
     if(box.intersects(bbox)){
-        QPainter painter(&image);
+
         painter.setRenderHint(QPainter::Antialiasing);
 
         QScopedPointer<RenderVisitor> visitor(RenderVisitor::create(*this, *this));
         kmldom::SimplePreorderDriver(visitor.data()).Visit(m_root);
         const auto styles = visitor->styleList();
-        for(auto key : styles.keys()){
+        for(const auto key : styles.keys()){
             StyleParams empty;
             if(!m_customStyles.contains(key))
                 m_customStyles.insert(key, empty);
         }
-        visitor->calculateProjection(size, centerPoint, zoom);
+        visitor->calculateProjection(rect.size(), centerPoint, zoom);
         visitor->render(painter);
     }
 }
 
-/*
- * bool Graphics::setStyles(const StyleParams& styles){
-    bool changes = false;
-    if((m_styles.lineWidth != styles.lineWidth)
-
-    || (m_styles.lineColor != styles.lineColor)
-
-    ||(m_styles.fillColor != styles.fillColor)
-
-    ||(m_styles.fill != styles.fill)
-
-    ||(m_styles.icon != styles.icon))
-         changes = true;
-    if(changes)
-        m_styles = styles;
-    return changes;
-}
-*/
 
 
 StyleParams KmlDocumentPrivate::customStyle(const StyleParams& def, const QString& styleId) const{
@@ -160,7 +156,7 @@ QPointF KmlDocument::centerPoint(qreal zoom) const{
     return p.fromLatLngToPoint(c.lat(), c.lon(), zoom);
 }
 
-void KmlDocument::render(QImage& image, const QSize& size, qreal zoom, const QPointF& centerPoint, bool erase){
+void KmlDocument::render(QPixmap& image, const QSize& size, qreal zoom, const QPointF& centerPoint, bool erase){
     Q_D(KmlDocument);
     d->renderAll(image, size, zoom, centerPoint, erase);
     emit imageChanged();
@@ -178,9 +174,8 @@ qreal KmlDocument::naturalZoom(const QSize& size) const {
     return zoom;
 }
 
-QImage KmlDocument::render(const QSize& size){
-    QImage image;
-    const qreal zoom = naturalZoom(size);
+QPixmap KmlDocument::render(const QSize& size, qreal zoom){
+    QPixmap image;
     render(image, size, zoom, centerPoint(zoom), true);
     return image;
 }
@@ -192,7 +187,7 @@ QVector<KmlElement> KmlDocument::elements() const {
         Graphics::GraphicsList graphics;
         StyleVisitor::StyleList styles;
         d->getPolygons(graphics, styles);
-        for(auto g : graphics){
+        for(const auto g : graphics){
             KmlElementPrivate* p = new KmlElementPrivate(d->customStyle(styles[g->styleId()], g->styleId()), g);
             elements->append(KmlElement(p));
         }
@@ -233,7 +228,7 @@ bool KmlDocument::open(QString url, KmlFetcher* fetcher){
 }
 */
 
-bool KmlDocument::open(QIODevice& device){
+bool KmlDocument::open(QIODevice& device, QString* errorString){
     //Q_D(KmlDocument);
    // QByteArray data = device->readAll();
     const bool opened = device.isOpen();
@@ -242,14 +237,26 @@ bool KmlDocument::open(QIODevice& device){
     const QString data = device.readAll();
     if(!opened)
         device.close();
-    return open(data);
+    return open(data, errorString);
 }
 
-bool KmlDocument::open(const QString& document){
+bool KmlDocument::open(const QString& document, QString* errorString){
     Q_D(KmlDocument);
-    const kmldom::ElementPtr root = kmldom::Parse(std::string(document.toUtf8().constData(), document.length()), nullptr);
-    if(root == nullptr)
+#ifdef C_NUMBER_LOCALE
+    auto systemLocale = ::setlocale(0, nullptr);
+    ::setlocale(LC_NUMERIC, "C");
+#endif
+    std::string errors;
+    const kmldom::ElementPtr root = kmldom::Parse(std::string(document.toUtf8().constData(), document.length()), &errors);
+    if(errorString != nullptr && errors.length() > 0){
+        *errorString = QString::fromStdString(errors);
+    }
+#ifdef C_NUMBER_LOCALE
+    ::setlocale(LC_NUMERIC, systemLocale);
+#endif
+    if(root == nullptr){
         return false;
+    }
     d->setRoot(root);
     return true;
 }
@@ -282,7 +289,7 @@ QStringList KmlDocument::urlRequests() const{
       kmldom::SimplePreorderDriver(visitor.data()).Visit(d->rootFeature());
 
       const auto values = styles.values();
-      for(auto s : values){
+      for(const auto s : values){
           if(!s.icon().isEmpty() && !d->m_data.contains(s.icon())){
               list.append(s.icon());
           }
@@ -303,7 +310,8 @@ QStringList KmlDocument::urlRequests() const{
       emit documentChanged();
   }
 
-const QVariantMap& KmlDocument::styles(const QString& name) const{
+
+ QVariantMap KmlDocument::styles(const QString& name) const{
     Q_D(const KmlDocument);
     return d->styles(name);
 }

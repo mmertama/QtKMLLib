@@ -3,5 +3,6 @@
         <file>KmlMap.qml</file>
         <file>mapTest.qml</file>
         <file>kmlMapTest.qml</file>
+        <file>quickItemTest.qml</file>
     </qresource>
 </RCC>

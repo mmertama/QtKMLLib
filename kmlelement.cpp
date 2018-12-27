@@ -37,7 +37,7 @@ KmlQmlElementPrivate::KmlQmlElementPrivate(const StyleParams& styles, const Grap
 const QVariantList& KmlQmlElementPrivate::vertices() const{
     if(m_vertices.isEmpty()){
         KmlQmlElementPrivate* p = const_cast<KmlQmlElementPrivate*>(this);
-        for(auto v : m_g->vertices())
+        for(const auto v : m_g->vertices())
             p->m_vertices.append(QVariant::fromValue(v));
     }
     return m_vertices;
@@ -47,18 +47,23 @@ const QVariantList& KmlQmlElementPrivate::vertices() const{
 const KmlElement::KmlVertices& KmlElementPrivate::vertices() const{
     if(m_vertices.isEmpty()){
         KmlElementPrivate* p = const_cast<KmlElementPrivate*>(this);
-        for(auto v : m_g->vertices()){
-            p->m_vertices.append({v.latitude(), v.longitude(), -1});
+        p->m_bounds = 0;
+        for(const auto v : m_g->vertices()){
+            p->m_vertices.append({v.latitude(), v.longitude(), m_bounds});
         }
-        int index = 1;
-        for(auto s : m_g->subgraphics()){
-            for(auto v : s->vertices()){
-                p->m_vertices.append({v.latitude(), v.longitude(), index});
+
+        for(const auto s : m_g->subgraphics()){
+            for(const auto v : s->vertices()){
+                p->m_vertices.append({v.latitude(), v.longitude(), m_bounds});
             }
-            ++index;
+            ++p->m_bounds;
         }
     }
     return m_vertices;
+}
+
+int KmlElement::boundCount() const{
+    return d_ptr->boundCount();
 }
 
 QString KmlElementBasePrivate::type() const{
@@ -138,11 +143,15 @@ bool KmlElement::isIn(const QGeoCoordinate& coord) const{
 
 KmlElement::KmlVertices KmlElement::vertices(int bound) const{
     KmlElement::KmlVertices vList;
-    for(auto v : d_ptr->vertices()){
+    for(const auto v : d_ptr->vertices()){
         if(v.bound == bound)
             vList.append(v);
     }
     return vList;
+}
+
+int KmlQmlElement::boundCount() const{
+    return d_ptr->boundCount();
 }
 
 KmlElement::KmlVertices KmlElement::vertices() const{

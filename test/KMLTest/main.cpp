@@ -2,13 +2,15 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QFile>
-#include <QtWebView>
 #include <QDebug>
+#include <QtWebView>
 #include "qmlkml.h"
 
 int main(int argc, char *argv[]){
     QGuiApplication app(argc, argv);
     QtWebView::initialize();
+
+    qCritical() << "This example is depricated";
 
     QFile kml(":/Teknopolis.kml");
     Q_ASSERT(kml.exists());

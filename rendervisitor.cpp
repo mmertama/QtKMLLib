@@ -47,7 +47,7 @@ void RenderVisitor::insertPoints(const Graphics::GraphicsPtr& g, const QSizeF si
         points.append((pos - center) + QPointF(size.width() / 2.0, size.height() / 2.0));
     }
     m_polygons.insert(g.get(), points);
-    for(auto& gg: g->subgraphics())
+    for(const auto& gg: g->subgraphics())
         insertPoints(gg, size, center, zoomFactor);
 }
 
@@ -55,7 +55,7 @@ void RenderVisitor::insertPoints(const Graphics::GraphicsPtr& g, const QSizeF si
 void RenderVisitor::calculateProjection(const QSizeF size, const QPointF& center, qreal zoomFactor){
     //f_f = center;
     m_polygons.clear();
-    for(auto& g: m_graphics){
+    for(const auto& g: m_graphics){
         insertPoints(g, size, center, zoomFactor);
     }
 }
@@ -67,7 +67,7 @@ void RenderVisitor::drawPolygon(QPainter& painter, const Graphics::GraphicsPtr& 
         QPainterPath path;
         const QPolygonF polygon(p);
         path.addPolygon(polygon);
-        for(auto& s : g->subgraphics()){
+        for(const auto& s : g->subgraphics()){
             const auto& hole = m_polygons.find(s.get()).value();
             QPainterPath inner;
             inner.addPolygon(hole);
@@ -92,7 +92,7 @@ void RenderVisitor::drawPoint(QPainter& painter, const StyleParams& s, const QPo
 
 
 void RenderVisitor::render(QPainter& painter) const {
-    for(auto& g: m_graphics){
+    for(const auto& g: m_graphics){
         const auto s = m_styles.customStyle(m_ptrStyles->get(g->styleId()), g->styleId());// = customStyles(m_ptrStyles->get(g->styleId()), g->styleId());
         QPen pen;
         pen.setColor(s.lineColor());

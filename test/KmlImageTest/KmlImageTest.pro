@@ -4,11 +4,11 @@
 #
 #-------------------------------------------------
 
-QT += widgets
-QT += quickwidgets
-QT += core gui qml quick location xml network
-QT += core gui quick widgets quickwidgets
+include("../config.pri")
 
+QT       += core gui qml quick location xml quickwidgets network opengl
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = KmlImageTest
 TEMPLATE = app
 
@@ -17,33 +17,40 @@ INCLUDEPATH += ../..
 CONFIG += c++11
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+        linepath.cpp \
+        polymesh.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    linepath.h \
+    polymesh.h
+
+HEADERS += \
+    ../linedraw/geoline.h \
+    ../linedraw/line_p.h \
+    ../linedraw/line.h \
+    ../linedraw/linecollection.h \
+    ../linedraw/lineitem.h
+
+SOURCES += \
+    ../linedraw/geoline.cpp \
+    ../linedraw/line.cpp \
+    ../linedraw/linecollection.cpp \
+    ../linedraw/lineitem.cpp
+
+INCLUDEPATH += ../linedraw
 
 FORMS    += \
     mainwindow.ui
 
 CONFIG += mobility
 
-unix{
-PROJECT_LIBS = $${PWD}/../../libs/unix
-}
+APP_SEARCH_PATH=$${PROJECT_LIBS}
+#APP_SEARCH_PATH=$${_PRO_FILE_PWD_}/../../../../../lib
+message("Note: non system search path:")
+message($$APP_SEARCH_PATH)
 
-macx{
-PROJECT_LIBS = $${PWD}/../../libs/osx
-}
-
-win32{
-PROJECT_LIBS = $${PWD}/../../libs/win
-}
-
-android{
-    config += ANDROID_NDK_PLATFORM=android-26
-    PROJECT_LIBS = $${PWD}/../../libs/android
-}
-
-LIBS += -L$$PROJECT_LIBS -lqtkml -llibkml
+LIBS += -L$$APP_SEARCH_PATH -lqtkml -llibkml
 unix: LIBS += -lexpat
 
 DISTFILES += \
@@ -53,6 +60,7 @@ RESOURCES += \
     kmlimage.qrc
 
 macx{
-#QMAKE_MAC_SDK = macosx10.11
+# QMAKE_MAC_SDK = macosx10.11
+LIBS += -L/usr/local/opt/expat/lib -lexpat
 }
 

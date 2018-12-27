@@ -8,7 +8,7 @@ using namespace QtKml;
 
 //constexpr char StyleParams::DEFAULT_ICON[];
 
-StyleVisitor::StyleVisitor(StyleList& styles) : m_styles(styles){
+StyleVisitor::StyleVisitor(StyleList& styles) : m_styles(&styles){
 }
 
 StyleVisitor::~StyleVisitor(){
@@ -75,7 +75,7 @@ void StyleVisitor::VisitStyle(const kmldom::StylePtr &element){
                 style.setIcon (QString::fromStdString(is->get_icon()->get_href()));
             }
         }
-        m_styles.insert(styleId, style);
+        m_styles->insert(styleId, style);
      //   qDebug() << styleId << "fill:" << style.fill;
     }
 }

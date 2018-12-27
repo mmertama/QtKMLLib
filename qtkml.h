@@ -49,7 +49,7 @@ public:
         int bound; // 0 < is outer bound, else holes
         operator QGeoCoordinate() const {return QGeoCoordinate(latitude, longitude);}
     };
-    static constexpr int OUTBOUND = -1;
+    static constexpr int OUTBOUND = 0;
     typedef QVector<KmlVertex> KmlVertices;
     KmlElement(){}
     KmlElement(KmlElementPrivate* d);
@@ -64,6 +64,7 @@ public:
     static constexpr auto LINE_WIDTH = "line_width";
     static constexpr auto ICON = "icon";
     QString type() const;
+    int boundCount() const;
     KmlVertices vertices(int bound) const;
     KmlVertices vertices() const;
     QGeoRectangle bounds() const;
@@ -95,15 +96,17 @@ public:
     /**
      * @brief open
      * @param device
+     * @param errorString - error information get from the XML parser
      * @return
      */
-    bool open(QIODevice& device);
+    bool open(QIODevice& device, QString* errorString = nullptr);
     /**
      * @brief open
      * @param document
+     * @param errorString - error information get from the XML parser
      * @return
      */
-    bool open(const QString& document);
+    bool open(const QString& document, QString* errorString = nullptr);
     /**
      * @brief render, enforces image to be rerendered
      * @param image
@@ -112,7 +115,7 @@ public:
      * @param centerPoint
      * @param erase
      */
-    void render(QImage& image, const QSize& size, qreal zoom, const QPointF& centerPoint, bool erase);
+    void render(QPixmap& image, const QSize& size, qreal zoom, const QPointF& centerPoint, bool erase);
     /**
      * @brief centerPoint - Calculates Mercator projected point of the coordinates at center of image
      * @param zoom
@@ -120,15 +123,10 @@ public:
      */
     QPointF centerPoint(qreal zoom) const;
     /**
-     * @brief image
-     * @return
-     */
- //   QImage image();
-    /**
      * @brief qmlImage - to register for QML
      * @return
      */
-    QImage render(const QSize& size);
+    QPixmap render(const QSize& size, qreal zoom);
     /**
      * @brief elements
      * @return
@@ -166,9 +164,26 @@ public:
      */
     QStringList urlRequests() const;
     /**
-     * @brief setData
+     * @brief setData - set external dat for URL, see setData
      * @param url
      * @param data
+     * ...
+    KmlDocument* doc = new KmlDocument(this);
+    QFile file(filename);
+    //Open file
+    if(doc->open(file)){
+        //Check if KML file has some HTTP requests (e.g. pin point images to retrieve)
+        for(auto ss : doc->urlRequests()){
+            //get external data
+            QUrl url;
+            url.setUrl(ss);
+            QNetworkRequest request(url);
+            QNetworkReply* reply =  m_accessManager->get(request);
+            QObject::connect(reply, &QNetworkReply::finished, [reply, ss, doc](){
+                doc->setData(ss, reply->readAll());
+                reply->deleteLater();
+            });
+     ...
      */
     void setData(QString url, const QByteArray& data);
     /**
@@ -182,7 +197,7 @@ public:
      * @param name
      * @return
      */
-    const QVariantMap& styles(const QString& name) const;
+    QVariantMap styles(const QString& name) const;
     /**
      * @brief styleNames
      * @return

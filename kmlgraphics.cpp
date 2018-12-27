@@ -1,4 +1,5 @@
 #include <QtQml>
+#include <QPainter>
 
 
 #include "kmlgraphics.h"
@@ -10,7 +11,7 @@
 using namespace QtKml;
 
 KmlQmlGraphicsPrivate::~KmlQmlGraphicsPrivate(){
-    for(auto r : m_renderers){
+    for(const auto& r : m_renderers){
         r->d_ptr->freeMonitor(this);
     }
 }
@@ -30,6 +31,7 @@ KmlQmlRenderer* KmlQmlGraphicsPrivate::at(int index) const{
 }
 
 int KmlQmlGraphicsPrivate::append(const QString& id, KmlQmlRenderer* renderer){
+    Q_ASSERT(renderer->parent());
     m_renderers.insert(id, renderer);
     return m_renderers.count();
 }
@@ -49,22 +51,42 @@ inline QGeoCoordinate operator +(const QGeoCoordinate& a, const QGeoCoordinate& 
 }
 
 
-void KmlQmlGraphicsPrivate::renderAll(const QSize& size, qreal zoom, const QPointF& centerPoint){
-    m_image.fill(Qt::transparent);
-    //remove this if not working
-    for(auto r = m_renderers.begin(); r != m_renderers.end(); r++) {
-        (*r)->d_ptr->doc()->renderAll(m_image, size, zoom, centerPoint, false);
+void KmlQmlGraphicsPrivate::renderAll(QPainter& painter,  const QRect& rect, qreal zoom, const QPointF& centerPoint, std::function<bool (const QString& id)> filter){
+
+    if(!painter.isActive()){
+        qWarning() << "Painter failed";
+        return;
     }
+    painter.setBackgroundMode(Qt::TransparentMode);
+  //  painter.fillRect(rect, Qt::transparent);
+    for(const auto& r : m_renderers){
+        if(filter == nullptr || filter(r->identifier())){
+            r->d_ptr->doc()->renderAll(painter, rect, zoom, centerPoint);
+        }
+    }
+}
+
+void KmlQmlGraphicsPrivate::renderAll(const QSize& size, qreal zoom, const QPointF& centerPoint, std::function<bool (const QString& id)> filter){
+    if(size != m_image.size()){
+        m_image = QPixmap(size);
+    }
+
+    m_image.fill(Qt::transparent);
+
+    QPainter painter(&m_image);
+
+    renderAll(painter, QRect({0, 0}, size), zoom, centerPoint, filter);
 }
 
 KmlQmlGraphics::KmlQmlGraphics(QObject* parent) : QObject(parent), d_ptr(new KmlQmlGraphicsPrivate(this)){
     qmlRegisterUncreatableType<KmlQmlRenderer>("QtKML", 1, 0, "kmlrenderer", "QtKML");
     qmlRegisterUncreatableType<KmlQmlElement>("QtKML", 1, 0, "kmlelement", "QtKML");
+    qmlRegisterType<KmlItem>("QtKML", 1, 0, "KmlItem");
     qRegisterMetaType<QGeoCoordinate>();
     qRegisterMetaType<QGeoRectangle>();
 }
 
-bool KmlQmlGraphics::append(KmlDocument* document, QString identifier){
+bool KmlQmlGraphics::append(KmlDocument* document, const QString& identifier){
     Q_D(KmlQmlGraphics);
     if(document == nullptr)
         return false; //null is not ok
@@ -73,7 +95,10 @@ bool KmlQmlGraphics::append(KmlDocument* document, QString identifier){
             return false; //but then there shall not be id
         document->d_ptr->setIdentifier(identifier); //set id
     }
-    KmlQmlRenderer* renderer = new KmlQmlRenderer(document->d_ptr, document);
+    if(!document->parent()){
+        document->setParent(this);
+    }
+    auto renderer = new KmlQmlRenderer(document->d_ptr, document);
     QObject::connect(document, &KmlDocument::imageChanged, this, &KmlQmlGraphics::renderersChanged);
     QObject::connect(renderer, &KmlQmlRenderer::documentChanged, this, &KmlQmlGraphics::renderersChanged);
     remove(nullptr, identifier);
@@ -84,7 +109,7 @@ bool KmlQmlGraphics::append(KmlDocument* document, QString identifier){
     return true;
 }
 
-void KmlQmlGraphics::remove(KmlDocument* document, QString identifier){
+void KmlQmlGraphics::remove(KmlDocument* document, const QString& identifier){
     Q_D(KmlQmlGraphics);
     int changes = 0;
     if(document != nullptr)
@@ -103,6 +128,11 @@ KmlDocument* KmlQmlGraphics::document(const QString& id) const{
         return qobject_cast<KmlDocument*>(d->get(id)->parent());
     }
     return nullptr;
+}
+
+QStringList KmlQmlGraphics::documents() const{
+    Q_D(const KmlQmlGraphics);
+    return d->ids();
 }
 
 QQmlListProperty<QObject> KmlQmlGraphics::renderers(){

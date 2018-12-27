@@ -5,6 +5,7 @@
 #include <QQuickImageProvider>
 #include <QQmlListProperty>
 #include <QQmlPropertyMap>
+#include <QQuickPaintedItem>
 
 
 namespace QtKml {
@@ -12,6 +13,7 @@ namespace QtKml {
 class KmlQmlRendererPrivate;
 class KmlQmlElementPrivate;
 class KmlQmlGraphicsPrivate;
+class KmlQmlGraphics;
 
 
 /**
@@ -41,9 +43,42 @@ public:
     KmlQmlImage(KmlQmlGraphicsPrivate* graphics);
     ~KmlQmlImage();
 private:
-    QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize);
+    QPixmap requestPixmap(const QString& id, QSize* size, const QSize& requestedSize);
 private:
     KmlQmlGraphicsPrivate* m_g;
+};
+
+/**
+ * @brief The KmlItem class
+ */
+class KmlItem : public QQuickPaintedItem{
+    Q_OBJECT
+    Q_PROPERTY (QGeoCoordinate center READ center WRITE setCenter NOTIFY centerChanged)
+    Q_PROPERTY (qreal zoom READ zoom WRITE setZoom NOTIFY zoomChanged)
+    Q_PROPERTY (KmlQmlGraphics* content READ content WRITE setContent NOTIFY contentChanged)
+    Q_PROPERTY(QStringList elements READ idList WRITE setIdList NOTIFY idListChanged)
+public:
+    KmlItem(QQuickItem* parent = nullptr);
+    QGeoCoordinate center() const;
+    void setCenter(const QGeoCoordinate& center);
+    qreal zoom() const;
+    void setZoom(qreal zoom);
+    KmlQmlGraphics* content() const;
+    void setContent(KmlQmlGraphics* c);
+    QStringList idList() const;
+    void setIdList(const QStringList& ids);
+signals:
+    void centerChanged(const QGeoCoordinate& coord);
+    void zoomChanged(qreal zoom);
+    void contentChanged();
+    void idListChanged();
+private:
+    void paint(QPainter* painter);
+private:
+    QGeoCoordinate m_center;
+    qreal m_zoom = 0;
+    KmlQmlGraphics* m_graphics = nullptr;
+    QStringList m_idList;
 };
 
 /**
@@ -67,6 +102,7 @@ private:
     Q_PROPERTY(QVariantMap styles READ styles)
     Q_PROPERTY(QVariantList vertices READ vertices)
     Q_PROPERTY(QString styleName READ styleName)
+    Q_PROPERTY(int boundCount READ boundCount)
 public:
     QGeoRectangle bounds() const;
     QVariantMap styles() const;
@@ -74,6 +110,7 @@ public:
     QGeoCoordinate center() const;
     QString type() const;
     QString styleName() const;
+    int boundCount() const;
 public:
     Q_INVOKABLE bool isIn(const QGeoCoordinate& coord) const;
 private:
@@ -98,7 +135,7 @@ class KmlQmlRenderer: public QObject{
     Q_PROPERTY(QString identifier READ identifier)
 public:
     Q_INVOKABLE void setStyles(const QString& name, const QVariantMap& style);
-    Q_INVOKABLE const QVariantMap& styles(const QString& name) const;
+    Q_INVOKABLE QVariantMap styles(const QString& name) const;
     Q_INVOKABLE QStringList styleNames() const;
 public:
     KmlQmlRenderer(const QSharedPointer<KmlDocumentPrivate>& doc, KmlDocument* parent);
@@ -150,7 +187,7 @@ public:
      * @brief append for QML rendering
      * @param document
      */
-    bool append(KmlDocument* document, QString id = "");
+    bool append(KmlDocument* document, const QString& id = "");
     /**
      * @brief qmlImage
      * @return
@@ -160,7 +197,7 @@ public:
      * @brief remove
      * @param document
      */
-    void remove(KmlDocument* document = nullptr, QString id = "");
+    void remove(KmlDocument* document = nullptr, const QString& id = "");
     /**
      * @brief graphics
      * @return
@@ -177,13 +214,20 @@ public:
      * @return
      */
     KmlDocument* document(const QString& id) const;
+
+    /**
+     * @brief documents
+     * @return
+     */
+    QStringList documents() const;
 signals:
-    void documentAdded(QString id);
-    void documentRemoved(QString id);
+    void documentAdded(const QString& id);
+    void documentRemoved(const QString& id);
     void renderersChanged();
 private:
     QScopedPointer<KmlQmlGraphicsPrivate> const d_ptr;
     Q_DECLARE_PRIVATE(KmlQmlGraphics)
+    friend class KmlItem;
 };
 
 } //namespace QtKml

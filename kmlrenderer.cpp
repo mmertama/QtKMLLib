@@ -4,6 +4,8 @@
 #include "qmlkml.h"
 #include "kmlelement.h"
 
+#include <QDebug>
+
 //const StyleParams& KmlQmlRendererPrivate::style(QString id) const {
 //    return m_styles.get(id);
 //}
@@ -18,13 +20,14 @@ KmlQmlRendererPrivate::KmlQmlRendererPrivate(QObject* owner,
     m_graphics.clear();
     doc->getPolygons(m_graphics, m_styles);
     m_centerPoint = doc->centerPoint();
-    for(auto g : m_graphics){
+    for(const auto g : m_graphics){
         auto p = new KmlQmlElementPrivate(doc->customStyle(m_styles[g->styleId()], g->styleId()), g);
         m_list.append(new KmlQmlElement(owner, p));
     }
 }
 
 KmlQmlRendererPrivate::~KmlQmlRendererPrivate(){
+    qDebug() << "~KmlQmlRendererPrivate" << this;
   //  for(auto g: m_graphics)
   //      delete g;
 }
@@ -45,6 +48,7 @@ KmlQmlRenderer::KmlQmlRenderer(const QSharedPointer<KmlDocumentPrivate>& doc, Km
 }
 
 KmlQmlRenderer::~KmlQmlRenderer(){
+    qDebug() << "~KmlQmlRenderer" << this;
 }
 
 QGeoRectangle KmlQmlRenderer::bounds() const{
@@ -81,7 +85,7 @@ void KmlQmlRenderer::setStyles(const QString& name, const QVariantMap& style){
     emit documentChanged();
 }
 
-const QVariantMap& KmlQmlRenderer::styles(const QString& name) const{
+QVariantMap KmlQmlRenderer::styles(const QString& name) const{
     Q_D(const KmlQmlRenderer);
     return d->doc()->styles(name);
 }

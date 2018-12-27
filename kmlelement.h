@@ -23,9 +23,11 @@ public:
     QGeoRectangle bounds() const;
     QPolygonF polygon() const;
     bool isIn(const QGeoCoordinate& coord) const;
+    int boundCount() const {return m_bounds;}
 protected:
     const Graphics::GraphicsPtr m_g;
     QVariantMap m_styles;
+    int m_bounds = -1;
 };
 
 class KmlQmlElementPrivate : public KmlElementBasePrivate{

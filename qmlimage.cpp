@@ -8,13 +8,13 @@
 
 using namespace QtKml;
 
-KmlQmlImage::KmlQmlImage(KmlQmlGraphicsPrivate* g) : QQuickImageProvider(QQuickImageProvider::Image), m_g(g){
+KmlQmlImage::KmlQmlImage(KmlQmlGraphicsPrivate* g) : QQuickImageProvider(QQuickImageProvider::Pixmap), m_g(g){
 }
 
-KmlQmlImage::KmlQmlImage(KmlQmlImage && other) : QQuickImageProvider(QQuickImageProvider::Image), m_g(other.m_g){
+KmlQmlImage::KmlQmlImage(KmlQmlImage && other) : QQuickImageProvider(QQuickImageProvider::Pixmap), m_g(other.m_g){
 }
 
-KmlQmlImage::KmlQmlImage(const KmlQmlImage & other) : QQuickImageProvider(QQuickImageProvider::Image), m_g(other.m_g){
+KmlQmlImage::KmlQmlImage(const KmlQmlImage & other) : QQuickImageProvider(QQuickImageProvider::Pixmap), m_g(other.m_g){
 }
 
 KmlQmlImage::~KmlQmlImage(){
@@ -26,7 +26,7 @@ KmlQmlImage& KmlQmlImage::operator=(const KmlQmlImage& other){
 }
 
 
-KmlQmlImage::KmlQmlImage() : QQuickImageProvider(QQuickImageProvider::Image), m_g(nullptr){
+KmlQmlImage::KmlQmlImage() : QQuickImageProvider(QQuickImageProvider::Pixmap), m_g(nullptr){
 }
 
 QPair<qreal, qreal> parsePair(const QString& str, QChar separator){
@@ -35,26 +35,32 @@ QPair<qreal, qreal> parsePair(const QString& str, QChar separator){
                 str.mid(str.indexOf(QRegExp(separator)) + 1).toDouble());
 }
 
-QImage KmlQmlImage::requestImage(const QString& uri, QSize* size, const QSize& requestedSize){
+QPixmap KmlQmlImage::requestPixmap(const QString& uri, QSize* size, const QSize& requestedSize){
+    //qDebug() << "rpx" << uri;
     if(m_g == nullptr || m_g->count() <= 0){
-        const auto sz = requestedSize.width() < 0 || requestedSize.height() < 0 ? QSize(1, 1) : requestedSize;
-        QImage image(sz, QImage::Format_ARGB32);
+        QSize sz(requestedSize.width() > 0
+                 ? requestedSize.width() : 1, requestedSize.height() > 0 ? requestedSize.height() : 1);
+        QPixmap image(sz);
         image.fill(Qt::transparent);
         *size = image.size();
         return image;
     }
-
-    if((requestedSize == QSize(-1, -1) || m_g->image().size() != requestedSize)){
+    if(!uri.isEmpty() && (requestedSize == QSize(-1, -1) || m_g->image().size() != requestedSize)){
         QUrlQuery query(uri);
         const auto p = parsePair(query.queryItemValue("center"), ',');
         const qreal zoom = query.queryItemValue("zoom").toDouble();
         const auto s = parsePair(query.queryItemValue("size"), 'x');
+        const auto fieldId = query.queryItemValue("fieldId");
         const qreal width = s.first;
         const qreal height = s.second;
         const MercatorProjection gmp;
         const QPointF centerPoint =  gmp.fromLatLngToPoint(p.first, p.second, zoom);
-        const QSize sz = requestedSize == QSize(-1, -1) ? QSize(qMax(1.0, width), qMax(1.0, height)) : requestedSize;
-        m_g->renderAll(sz, zoom, centerPoint);
+        const QSize sz = (requestedSize.width() > 0 && requestedSize.height() > 0) ?
+                    requestedSize : QSize(qMax(1.0, width), qMax(1.0, height));
+        const std::function<bool (const QString&)> filter =
+                fieldId.isEmpty() ?
+                    nullptr : std::function<bool (const QString&)>([fieldId](const QString& id)->bool{return fieldId == id;});
+        m_g->renderAll(sz, zoom, centerPoint, filter);
 #ifdef ALLOW_QDEBUG_PRINT
         qDebug() << "image updated";
 #endif

@@ -35,8 +35,28 @@ android{
     #IF NOT build, please check that Build Environent Set ANDROID_NDK_PLATFORM to android-21 !! (default android-9 does not compile)
 }
 
-QMAKE_CXXFLAGS_WARN_OFF -= -Wunused-parameter
 
+
+#QMAKE_CXXFLAGS_WARN_OFF -= -Wunused-parameter
+#QMAKE_CXXFLAGS += -Wno-unused-parameter
+#QMAKE_CXXFLAGS_WARN_OFF -= -Wunused-parameter
+#QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
+#QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
+#QMAKE_CXXFLAGS_WARN_ON += -Wno-parentheses-equality
+#QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
+#QMAKE_CXXFLAGS_WARN_ON += -Wno-parentheses
+#QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-private-field
+#QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-const-variable
+#QMAKE_CXXFLAGS_WARN_ON += -Wno-implicit-function-declaration
+#QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
+#QMAKE_CXXFLAGS_WARN_ON += -Wno-dangling-else
+#QMAKE_CFLAGS_WARN_ON += -Wno-unused-parameter
+#QMAKE_CFLAGS_WARN_ON += -Wno-sign-compare
+#QMAKE_CFLAGS_WARN_ON += -Wno-implicit-function-declaration
+QMAKE_CXXFLAGS_WARN_ON += -w
+QMAKE_CFLAGS_WARN_ON += -w
+#QMAKE_CXXFLAGS += -Wno-unused-parameter -Wno-parentheses-equality
+#QMAKE_CXXFLAGS += -isystem --system-header-prefix=libkml-1.2.0
 
 SOURCES += \
     libkml-1.2.0/src/kml/base/attributes.cc \

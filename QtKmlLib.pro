@@ -5,8 +5,7 @@
 #-------------------------------------------------
 
 include("third_party/libkml.pri")
-include(config.pri)
-
+include("config.pri")
 
 QT -= gui
 QT += quick positioning
@@ -16,6 +15,8 @@ TEMPLATE = lib
 CONFIG += staticlib
 
 CONFIG += c++11
+
+DEFINES += C_NUMBER_LOCALE
 
 #pathsTarget.commands = python $${_PRO_FILE_PWD_}/createlink.py $${_PRO_FILE_PWD_}/paths/uriparser $${_PRO_FILE_PWD_}/libkml-1.2.0/third_party/uriparser-0.7.5
 #pathsTarget.depends =
@@ -34,7 +35,8 @@ SOURCES += \
     kmlelement.cpp \
     kmlgraphics.cpp \
     qmlimage.cpp \
-    kmlrenderer.cpp
+    kmlrenderer.cpp \
+    kmlitem.cpp
 
 HEADERS += qtkml.h \
     rendervisitor.h \
@@ -63,14 +65,13 @@ DESTDIR = $${PROJECT_LIBS}
 
 message($$DESTDIR)
 
-macx{
- #   QMAKE_MAC_SDK = macosx10.11
-}
+
 
 
 QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS_WARN_OFF -= -Wunused-parameter
-QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
+#QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
+QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-parameter
 
 #DISTFILES += \
 #    third_party/third_party.pri

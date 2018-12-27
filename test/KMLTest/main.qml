@@ -15,7 +15,7 @@ Window {
         height: Math.min(parent.height, 640) //Free Google maps maximum size
         anchors.centerIn: parent
         color: "Red"
-        property variant current: webView
+        property variant current: mapView
         property variant mapCenter: kmlgraphics.renderers[0].center
         property real zoom: 15.0
         function set(topView){

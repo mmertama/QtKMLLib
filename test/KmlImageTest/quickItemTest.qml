@@ -3,6 +3,7 @@ import QtPositioning 5.5
 import QtLocation 5.5
 
 import com.corp.mars 1.0
+import QtKML 1.0
 import LineDraw 1.0
 
 Rectangle {
@@ -12,9 +13,6 @@ Rectangle {
         onRenderersChanged:{
             if(kmlgraphics.renderers.length > 0){
                map.visibleRegion = kmlgraphics.renderers[0].bounds
-               kml.visible = false
-               kml.reloader++
-               kml.visible = true
            }
         }
     }
@@ -37,33 +35,27 @@ Rectangle {
         onZoomLevelChanged: mapChanged()
         onCenterChanged: mapChanged()
     }
-    Image{
+    KmlItem{
         id: kml
         anchors.fill: parent
-        property int reloader: 0
-        source: "image://kmlimage/center=" +
-                map.center.latitude + "," + map.center.longitude +
-                "&zoom=" + map.zoomLevel +
-                "&size=" +  width + "x" + height +
-                "&dummy=" + reloader
+        content: kmlgraphics
+        zoom: map.zoomLevel
+        center: map.center
     }
      GeoLines{
-         id: path
+         id: lines
          anchors.fill: parent
          color: "#AA07FFFF"
-         objectName: "workLines"
-         thickness: 6
+         objectName: "drawLines"
+         lineWidth: 3
          visible: true
          antialiasing: true
          style: Line.STYLE_SOLID
+         zoom: map.zoomLevel
+         center: map.center
+         opacity: 0.5
      }
-     /*
-     Polymesh{
-         id: poly
-         objectName: "polymesh"
-         anchors.fill: parent;
-     } */
      Text{
-         text: "mapTest test (image + LineDrawer)"
+         text: "quickItemTest test (kmlItem + lineDrawer)"
      }
 }

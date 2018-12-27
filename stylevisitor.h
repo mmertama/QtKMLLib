@@ -38,6 +38,7 @@ public:
 
 class StyleParams : public QVariantMap{
 public:
+    virtual ~StyleParams() = default;
     QString icon() const {return value(KmlElement::ICON , "").toString();}
     QColor lineColor() const {return value(KmlElement::LINE_COLOR, 0xFF000000).value<QColor>();}
     QColor fillColor() const {return value(KmlElement::FILL_COLOR, 0xFFFFFFFF).value<QColor>();}
@@ -55,6 +56,7 @@ public:
     class StyleList : public QHash<QString, StyleParams>{
     public:
         StyleList(){insert("", StyleParams());}
+        virtual ~StyleList() = default;
         const StyleParams& get(const QString& key) const {return (!key.isNull() && contains(key)) ? find(key).value() : find("").value();}
     };
     StyleVisitor(StyleList& styles);
@@ -63,7 +65,7 @@ public:
 protected:
     virtual void VisitStyle(const kmldom::StylePtr &element);
 private:
-    StyleList& m_styles;
+    StyleList* m_styles;
     QString m_currentStyle;
 };
 

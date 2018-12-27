@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1045</width>
-    <height>488</height>
+    <height>626</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,38 +20,20 @@
       <x>20</x>
       <y>20</y>
       <width>991</width>
-      <height>441</height>
+      <height>561</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="5,5,5,1">
-     <item>
-      <widget class="QQuickWidget" name="kmlMapQtQuick">
-       <property name="locale">
-        <locale language="English" country="UnitedStates"/>
-       </property>
-       <property name="resizeMode">
-        <enum>QQuickWidget::SizeRootObjectToView</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="imageLabel">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QQuickWidget" name="mapQtQuick">
-       <property name="resizeMode">
-        <enum>QQuickWidget::SizeRootObjectToView</enum>
-       </property>
-      </widget>
-     </item>
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <widget class="QPushButton" name="openFileBtn">
+         <property name="maximumSize">
+          <size>
+           <width>64</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="text">
           <string>Open</string>
          </property>
@@ -72,6 +54,12 @@
        </item>
        <item>
         <widget class="QLabel" name="label">
+         <property name="maximumSize">
+          <size>
+           <width>64</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="text">
           <string>Colors</string>
          </property>
@@ -79,6 +67,12 @@
        </item>
        <item>
         <widget class="QPushButton" name="FillColor">
+         <property name="maximumSize">
+          <size>
+           <width>64</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="text">
           <string>Fill</string>
          </property>
@@ -86,8 +80,52 @@
        </item>
        <item>
         <widget class="QPushButton" name="BorderColor">
+         <property name="maximumSize">
+          <size>
+           <width>64</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="text">
           <string>Edge</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="2" column="0">
+        <widget class="QQuickWidget" name="mapQtQuick">
+         <property name="resizeMode">
+          <enum>QQuickWidget::SizeRootObjectToView</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QQuickWidget" name="kmlMapQtQuick">
+         <property name="resizeMode">
+          <enum>QQuickWidget::SizeRootObjectToView</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="imageLabel">
+         <property name="minimumSize">
+          <size>
+           <width>450</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QQuickWidget" name="quickItemMap">
+         <property name="resizeMode">
+          <enum>QQuickWidget::SizeRootObjectToView</enum>
          </property>
         </widget>
        </item>

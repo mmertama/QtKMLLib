@@ -21,9 +21,10 @@ public:
 class KmlDocumentPrivate : public UrlDataProvider, public CustomStyleProvider{
 public:
     KmlDocumentPrivate(){}
-    ~KmlDocumentPrivate();
+    virtual ~KmlDocumentPrivate();
     void setRoot(kmldom::ElementPtr root){ m_root = root;}
-    void renderAll(QImage& image, const QSize& size, qreal zoom, const QPointF& midpoint, bool erase);
+    void renderAll(QPainter& painter, const QRect& rect, qreal zoom, const QPointF& centerPoint);
+    void renderAll(QPixmap& image, const QSize& size, qreal zoom, const QPointF& midpoint, bool erase);
     Coord centerPoint() const;
    // bool isPoint(const QPointF& pos) const {return pos == m_centerPoint;}
     void getPolygons(Graphics::GraphicsList& list, StyleVisitor::StyleList& styles) const;
