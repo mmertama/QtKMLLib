@@ -22,9 +22,10 @@ class KmlElementPrivate;
 This is class to render KML data.
 
 There are three ways to render KML elements:
-1) QImage from KmlDocument
-2) QQuickImageProvider implementation KmlQmlImage from KmlQMLGraphics (see qmlkml.h)
-3) KmlGraphics Elements + javascript composition via list of KmlQmlRenderer from KmlQmlGraphics  (see qmlkml.h)
+1) KmlItem QML item (preferred)
+2) QImage from KmlDocument (slow but flexible)
+3) QQuickImageProvider implementation KmlQmlImage from KmlQMLGraphics (see qmlkml.h) (also flexible)
+4) KmlGraphics Elements + javascript composition via list of KmlQmlRenderer from KmlQmlGraphics  (see qmlkml.h) (fun with JS)
 
 **/
 
