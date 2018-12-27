@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>MapContainer.qml</file>
+        <file>Teknopolis.kml</file>
+        <file>KmlImage.qml</file>
+        <file>KmlMap.qml</file>
+        <file>alcatea.kml</file>
+        <file>lake.kml</file>
+    </qresource>
+</RCC>

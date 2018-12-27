@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>KmlMap.qml</file>
+        <file>mapTest.qml</file>
+        <file>kmlMapTest.qml</file>
+    </qresource>
+</RCC>
