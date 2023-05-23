@@ -4,6 +4,7 @@
 #include <QColor>
 #include <QObject>
 #include <QPointF>
+#include <QRecursiveMutex>
 
 namespace LineDraw{
 
@@ -58,14 +59,14 @@ public:
     int verticesCount() const;
     class VertexPtr{
     public:
-        VertexPtr(const QPointF* ptr, QMutex* lock) : m_ptr(ptr), m_lock(lock){m_lock->lock();}
+        VertexPtr(const QPointF* ptr, QRecursiveMutex* lock) : m_ptr(ptr), m_lock(lock){m_lock->lock();}
         ~VertexPtr(){m_lock->unlock();}
         const QPointF* operator->() {return m_ptr;}
         const QPointF* data() const {return m_ptr;}
         VertexPtr(VertexPtr&&) = default;
     private:
         const QPointF* m_ptr;
-        QMutex* m_lock;
+        QRecursiveMutex* m_lock;
     };
     VertexPtr vertices() const;
 protected:

@@ -2,7 +2,7 @@
 
 using namespace LineDraw;
 
-LineCollection::LineCollection() : m_mutex(QMutex::Recursive) {
+LineCollection::LineCollection() : m_mutex{} {
 }
 
 

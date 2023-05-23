@@ -40,6 +40,7 @@ public:
     qreal lineWidth() const;
     void setLineWidth(qreal lineWidth);
     qreal metersToPixels(qreal meter) const;
+    ~GeoLines() = default;
 signals:
     void centerChanged();
     void zoomChanged();

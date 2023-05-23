@@ -18,7 +18,7 @@ class LineCollection : public LinePainter  {
     Q_GADGET
 public:
     LineCollection();
-    virtual ~LineCollection(){}
+    virtual ~LineCollection() = default;
     Q_INVOKABLE Line* append(const QString& pathName);
     Q_INVOKABLE void remove(const QString& pathName);
     Q_INVOKABLE Line* path(const QString& pathName);
@@ -32,7 +32,7 @@ public:
     Line::Style style() const;
     void setStyle(Line::Style style);
     QStringList paths() const;
-    QMutex* mutex() {return &m_mutex;}
+    QRecursiveMutex* mutex() {return &m_mutex;}
 public:
     virtual void colorChanged(const QColor& pathColor){Q_UNUSED(pathColor)}
     virtual void thicknessChanged(qreal thickness){Q_UNUSED(thickness)}
@@ -43,7 +43,7 @@ public:
 protected:
     virtual Line* build() = 0;
 protected:
-    QMutex m_mutex;
+    QRecursiveMutex m_mutex;
     QHash<QString, Line*> m_lines;
     QStringList m_keys;
     QColor m_pathColor = DEFAULT_COLOR;

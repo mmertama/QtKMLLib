@@ -59,14 +59,14 @@ public:
     int verticesCount() const;
     class VertexPtr{
     public:
-        VertexPtr(const QPointF* ptr, QMutex* lock) : m_ptr(ptr), m_lock(lock){m_lock->lock();}
+        VertexPtr(const QPointF* ptr, QRecursiveMutex* lock) : m_ptr(ptr), m_lock(lock){m_lock->lock();}
         ~VertexPtr(){m_lock->unlock();}
         const QPointF* operator->() {return m_ptr;}
         const QPointF* data() const {return m_ptr;}
         VertexPtr(VertexPtr&&) = default;
     private:
         const QPointF* m_ptr;
-        QMutex* m_lock;
+        QRecursiveMutex* m_lock;
     };
     VertexPtr vertices() const;
 protected:
@@ -79,7 +79,7 @@ public:
     virtual QColor color() const = 0;
     virtual qreal thickness() const = 0;
     virtual Line::Style style() const = 0;
-    virtual QMutex* mutex() = 0;
+    virtual QRecursiveMutex* mutex() = 0;
     virtual Line* build() = 0;
     virtual ~LinePainter() = default;
 protected:

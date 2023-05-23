@@ -83,7 +83,7 @@ void GeoLines::remap(){
 
 
 void GeoLines::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry){
-    LineItem::geometryChanged(newGeometry, oldGeometry);
+    LineItem::geometryChange(newGeometry, oldGeometry);
     emit geometryChanged();
 }
 

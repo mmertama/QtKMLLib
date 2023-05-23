@@ -1,0 +1,3 @@
+[submodule "libkml"]
+	path = kmllib/third_party/libkml
+	url = https://github.com/libkml/libkml.git

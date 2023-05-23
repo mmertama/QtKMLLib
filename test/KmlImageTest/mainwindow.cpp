@@ -90,7 +90,7 @@ MainWindow::MainWindow(QWidget *parent) :
         Q_ASSERT(line0);
         Q_ASSERT(line1);
         auto noMorePoints = true;
-        for(const auto k : m_paths.keys()){
+        for(const auto& k : m_paths.keys()){
             const auto p = m_paths[k];
             if(m_index < p.length()){
                 noMorePoints = false;
@@ -110,10 +110,15 @@ MainWindow::MainWindow(QWidget *parent) :
             m_timer.stop();
     });
 
+    QObject::connect(ui->mapQtQuick, &QQuickWidget::statusChanged, [this](const QQuickWidget::Status& status) {
+        if( status == QQuickWidget::Ready ) {
+            Q_ASSERT(ui->mapQtQuick->rootObject());
+            const auto mapItem = ui->mapQtQuick->rootObject()->findChild<QObject*>("map");
+            connect(mapItem, SIGNAL(mapChanged()), this, SLOT(mapChanged()));
+        }
+    });
 
-   const auto mapItem = ui->mapQtQuick->rootObject()->findChild<QObject*>("map");
 
-   connect(mapItem, SIGNAL(mapChanged()), this, SLOT(mapChanged()));
 
 /*
     auto lines = ui->mapQtQuick->rootObject()->findChild<LinePath::LineDrawer*>("workLines");
@@ -135,14 +140,15 @@ MainWindow::~MainWindow(){
 
 void MainWindow::showColorPicker(const QString& item){
     KmlDocument* doc = m_kmlGraphics->document(KML);
-    for(auto element : doc->elements()){
+    if( ! doc ) return;
+    for(const auto& element : doc->elements()){
         if(element.type() == KmlElement::POLYGON){
             const auto styles = element.styles();
             const auto color = styles[item].value<QColor>();
             auto dlg = new QColorDialog(color, this);
             dlg->setOption(QColorDialog::ShowAlphaChannel, true);
             dlg->open();
-            QObject::connect(dlg, &QColorDialog::colorSelected, [this, doc, element, item] (const QColor & color) mutable{
+            QObject::connect(dlg, &QColorDialog::colorSelected, [doc, element, item] (const QColor & color) mutable{
                 doc->setStyles(element.styleName(), QVariantMap({{item, color}}));
             });
         }
@@ -167,7 +173,7 @@ void MainWindow::showKml(const QString& filename){
                 doc->setData(ss, reply->readAll());
                 reply->deleteLater();
             });
-            QObject::connect(reply, static_cast<void(QNetworkReply::*)(QNetworkReply::NetworkError)>(&QNetworkReply::error), [this] (QNetworkReply::NetworkError code){
+            QObject::connect(reply, &QNetworkReply::errorOccurred, [] (QNetworkReply::NetworkError code){
                qDebug() << "Download error " << code;
             });
         }
@@ -248,7 +254,7 @@ void MainWindow::showJson(const QString& filename, const QString& id){
 
         for(const auto v : field.vertices()){
             const auto p = QtKml::KmlDocument::project(QGeoCoordinate(v), zoomLevel, centerPoint);
-            qDebug() << v << "->" << p << zoomLevel;
+            qDebug() << v.longitude << v.latitude << "->" << p << zoomLevel;
             m_field.append(p);
         }
 

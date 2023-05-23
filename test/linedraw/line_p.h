@@ -22,7 +22,7 @@ public:
     int offset = 0;
     int len = std::numeric_limits<int>::max();
     mutable int flags = 0;
-    mutable QMutex* lock;
+    mutable QRecursiveMutex* lock;
 };
 
 #endif // LINE_P_H

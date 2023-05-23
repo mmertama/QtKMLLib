@@ -1,6 +1,6 @@
-
-#include <QtQuick/qsgnode.h>
-#include <QtQuick/qsgflatcolormaterial.h>
+#include <QSGGeometryNode>
+#include <QSGFlatColorMaterial>
+#include <QOpenGLBuffer>
 #include <QQuickWindow>
 #include <QMutexLocker>
 

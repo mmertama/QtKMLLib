@@ -2,6 +2,10 @@
 Qt / QML Wrapper on libkml
 
 
+brew install zlib
+brew install minizip
+brew install uriparser
+brew install expat
 
 There are three ways (due historical reasons) to render KML elements (pick one):
 1) KmlItem QML item (preferred)
