@@ -2,8 +2,9 @@
 set(NAME KmlImageTest)
 
 find_package(Qt6
-    COMPONENTS quick positioning location xml network opengl qml widgets quickwidgets
+    COMPONENTS Quick Positioning Xml Network OpenGL Qml Widgets QuickWidgets
     REQUIRED)
+
 
 qt_standard_project_setup()
 

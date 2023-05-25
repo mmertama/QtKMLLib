@@ -9,7 +9,7 @@ find_library(Expat NAMES expat REQUIRED)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libkml/cmake;${CMAKE_MODULE_PATH}")
 add_subdirectory(third_party)
 
-find_package(Qt6 REQUIRED COMPONENTS gui quick positioning REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Gui Quick Positioning REQUIRED)
 
 qt_standard_project_setup()
 
@@ -38,13 +38,6 @@ set(SOURCES
     qmlimage.cpp
     kmlrenderer.cpp
     kmlitem.cpp)
-
-#add_library(libkml OBJECT IMPORTED)
-
-#set_property(TARGET libkml PROPERTY IMPORTED_OBJECTS
-#  # Quotes are required because of the ()
-#  "/path/to/somewhere/objects$(EFFECTIVE_PLATFORM_NAME)/$(CURRENT_ARCH)/func.o"
-#)
 
 add_library(${PROJECT_NAME}
     ${HEADERS}
