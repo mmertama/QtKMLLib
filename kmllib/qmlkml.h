@@ -96,13 +96,13 @@ public:
     KmlQmlElement(QObject* parent, KmlQmlElementPrivate* p);
     ~KmlQmlElement();
 private:
-    Q_PROPERTY(QGeoCoordinate center READ center)
-    Q_PROPERTY(QString type READ type)
-    Q_PROPERTY(QGeoRectangle bounds READ bounds)
-    Q_PROPERTY(QVariantMap styles READ styles)
-    Q_PROPERTY(QVariantList vertices READ vertices)
-    Q_PROPERTY(QString styleName READ styleName)
-    Q_PROPERTY(int boundCount READ boundCount)
+    Q_PROPERTY(QGeoCoordinate center READ center CONSTANT)
+    Q_PROPERTY(QString type READ type CONSTANT)
+    Q_PROPERTY(QGeoRectangle bounds READ bounds CONSTANT)
+    Q_PROPERTY(QVariantMap styles READ styles CONSTANT)
+    Q_PROPERTY(QVariantList vertices READ vertices CONSTANT)
+    Q_PROPERTY(QString styleName READ styleName CONSTANT)
+    Q_PROPERTY(int boundCount READ boundCount CONSTANT)
 public:
     QGeoRectangle bounds() const;
     QVariantMap styles() const;
@@ -179,7 +179,7 @@ private:
 class KmlQmlGraphics: public QObject{
     Q_OBJECT
     Q_PROPERTY(QQmlListProperty<QObject> renderers READ renderers NOTIFY renderersChanged)
-    Q_PROPERTY(QGeoRectangle bounds READ bounds)
+    Q_PROPERTY(QGeoRectangle bounds READ bounds CONSTANT)
 public:
     Q_INVOKABLE QVariant renderer(const QString& id) const;
 public:

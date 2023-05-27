@@ -6,7 +6,7 @@
 #include "line.h"
 
 
-class LineDraw::LinePrivate{
+class LineDraw::LinePrivate {
 public:
     enum {NONE, VERTICES = 1, MATERIAL = 2, VISUAL = (VERTICES|MATERIAL), RESET = 4};
 public:

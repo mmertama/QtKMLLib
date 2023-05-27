@@ -1,8 +1,12 @@
 #include "linecollection.h"
+#include "lineitem.h"
 
 using namespace LineDraw;
 
-LineCollection::LineCollection() : m_mutex{} {
+
+#define PLOCK QMutexLocker o_locker(&m_mutex);
+
+LineCollection::LineCollection(LineInterface* lineItem) : m_lineItem{lineItem}, m_mutex{} {
 }
 
 
@@ -11,7 +15,7 @@ void LineCollection::remove(const QString& name){
     if(m_lines.contains(name)){
         m_lines.take(name);
         m_keys.removeOne(name);
-        emit pathsChanged();
+        pathsChanged();
     }
 }
 
@@ -22,15 +26,15 @@ QStringList LineCollection::paths() const{
 
 
 
-void LineCollection::clear(){
+void LineCollection::clearLines(){
     PLOCK
-    for(const auto& s : m_lines)
-            s->clear();
+    for(const auto& s : qAsConst(m_lines))
+        s->clearLine();
     m_keys.clear();
     m_pathColor = DEFAULT_COLOR;
     m_style = Line::STYLE_SOLID;
     m_volume = DEFAULT_VOLUME;
-    emit pathsChanged();
+    pathsChanged();
 }
 
 
@@ -41,7 +45,7 @@ Line* LineCollection::append(const QString& pathName){
     m_lines.insert(pathName, build());
     auto p = path(pathName);
     m_keys.append(pathName);
-    emit pathsChanged();
+    pathsChanged();
     return p;
 }
 
@@ -53,8 +57,8 @@ Line* LineCollection::path(const QString& pathName){
 }
 
 
-void LineCollection::commit(){
-    emit pathsChanged();
+void LineCollection::commitVertices() {
+    pathsChanged();
 }
 
 
@@ -76,7 +80,7 @@ Line::Style LineCollection::style() const{
 void LineCollection::setColor(const QColor& color){
     if(m_pathColor != color){
         m_pathColor = color;
-        emit colorChanged(color);
+        colorChanged(color);
     }
 }
 
@@ -84,7 +88,7 @@ void LineCollection::setColor(const QColor& color){
 void LineCollection::setThickness(qreal volume){
     if(m_volume != volume){
         m_volume = volume;
-        emit thicknessChanged(volume);
+        thicknessChanged(volume);
     }
 }
 
@@ -92,7 +96,7 @@ void LineCollection::setThickness(qreal volume){
 void LineCollection::setStyle(Line::Style style){
     if(m_style != style){
         m_style = style;
-        emit styleChanged(style);
+        styleChanged(style);
     }
 }
 
@@ -108,3 +112,10 @@ void LineCollection::bringOnTop(const QString& pathName){
 const Line* LineCollection::path(const QString& pathName) const{
     return m_lines[pathName];
 }
+
+
+Line* LineCollection::build() {return m_lineItem->build();}
+void LineCollection::pathsChanged() {m_lineItem->signalPathsChanged();}
+void LineCollection::colorChanged(const QColor& pathColor) {m_lineItem->signalColorChanged(pathColor);}
+void LineCollection::thicknessChanged(qreal thickness) {m_lineItem->signalThicknessChanged(thickness);}
+void LineCollection::styleChanged(Line::Style style) {m_lineItem->signalStyleChanged(style);}

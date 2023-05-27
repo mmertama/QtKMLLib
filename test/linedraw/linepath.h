@@ -10,7 +10,7 @@ class QSGGeometryNode;
 
 namespace LineDraw {
 
-class LineDrawer : public QQuickItem, public LineCollection{
+class LinePath : public QQuickItem, public LineCollection, public LineInterface {
     Q_OBJECT
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
     Q_PROPERTY(qreal thickness READ thickness WRITE setThickness NOTIFY thicknessChanged)
@@ -22,8 +22,8 @@ signals:
     void pathsChanged();
     void styleChanged(Line::Style style);
 public:
-    LineDrawer(QQuickItem*  parent = nullptr);
-    ~LineDrawer();
+    LinePath(QQuickItem*  parent = nullptr);
+    ~LinePath();
 public slots:
     void requestPaint();
 private:
@@ -31,6 +31,10 @@ private:
     QSGNode* updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* update);
     QSGGeometryNode* addLineNode(QSGNode* parent, const LinePrivate& line) const;
     Line* build();
+    void signalPathsChanged() {emit pathsChanged();}
+    void signalColorChanged(const QColor& pathColor) {emit colorChanged(pathColor);}
+    void signalThicknessChanged(qreal thickness) {emit thicknessChanged(thickness);}
+    void signalStyleChanged(Line::Style style) {emit styleChanged(style);}
 private:
     bool m_enforce = false;
     friend class LineDraw::LinePrivate;

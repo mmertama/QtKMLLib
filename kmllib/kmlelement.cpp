@@ -37,7 +37,7 @@ KmlQmlElementPrivate::KmlQmlElementPrivate(const StyleParams& styles, const Grap
 const QVariantList& KmlQmlElementPrivate::vertices() const{
     if(m_vertices.isEmpty()){
         KmlQmlElementPrivate* p = const_cast<KmlQmlElementPrivate*>(this);
-        for(const auto v : m_g->vertices())
+        for(const auto& v : m_g->vertices())
             p->m_vertices.append(QVariant::fromValue(v));
     }
     return m_vertices;
@@ -48,12 +48,12 @@ const KmlElement::KmlVertices& KmlElementPrivate::vertices() const{
     if(m_vertices.isEmpty()){
         KmlElementPrivate* p = const_cast<KmlElementPrivate*>(this);
         p->m_bounds = 0;
-        for(const auto v : m_g->vertices()){
+        for(const auto& v : m_g->vertices()){
             p->m_vertices.append({v.latitude(), v.longitude(), m_bounds});
         }
 
-        for(const auto s : m_g->subgraphics()){
-            for(const auto v : s->vertices()){
+        for(const auto& s : m_g->subgraphics()){
+            for(const auto& v : s->vertices()){
                 p->m_vertices.append({v.latitude(), v.longitude(), m_bounds});
             }
             ++p->m_bounds;
@@ -79,7 +79,7 @@ QString KmlElementBasePrivate::type() const{
 QPolygonF KmlElementBasePrivate::polygon() const{
     QPolygonF polygon(m_g->vertices().size());
     int i = 0;
-    for(const auto coord : m_g->vertices()){
+    for(const auto& coord : m_g->vertices()){
         polygon[i] = (QPointF(coord.latitude(), coord.longitude()));
         i++;
     }

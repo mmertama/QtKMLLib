@@ -6,7 +6,7 @@ using namespace LineDraw;
 //STYLE_SOLID, STYLE_DASH, STYLE_DOTS
 const Qt::PenStyle styleMap[] = {Qt::SolidLine, Qt::DashLine, Qt::DotLine};
 
-LineItem::LineItem(QQuickItem* parent) : QQuickPaintedItem(parent){
+LineItem::LineItem(QQuickItem* parent) : QQuickPaintedItem(parent), LineCollection(this) {
     QObject::connect(this, &LineItem::pathsChanged, [this](){
        update();
     });
@@ -15,7 +15,7 @@ LineItem::LineItem(QQuickItem* parent) : QQuickPaintedItem(parent){
 
  void LineItem::paint(QPainter* painter){
      painter->setRenderHint(QPainter::Antialiasing, true);
-     for(const auto line : m_lines){
+    for(const auto& line : qAsConst(*this)){
          const auto vertices = line->vertices();
          const auto off = qMin(0, line->offset());
          const auto len = line->verticesCount() - off;
@@ -43,4 +43,5 @@ LineItem::LineItem(QQuickItem* parent) : QQuickPaintedItem(parent){
     QObject::connect(this, &LineItem::thicknessChanged, p, &Line::setThickness);
     return p;
  }
+
 

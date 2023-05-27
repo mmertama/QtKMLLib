@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QGeoCoordinate>
+#include <QNetworkAccessManager>
 
 namespace Ui {
 class MainWindow;
@@ -32,7 +33,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QtKml::KmlQmlGraphics* m_kmlGraphics;
-    QNetworkAccessManager* m_accessManager;
+    QNetworkAccessManager m_accessManager;
     int m_index = 0;
     QTimer m_timer;
     QPolygonF m_field;

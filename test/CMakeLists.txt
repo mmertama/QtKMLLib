@@ -6,11 +6,14 @@ set(LINEDRAW
     	${LINEDRAW_PATH}/line.h
     	${LINEDRAW_PATH}/linecollection.h
     	${LINEDRAW_PATH}/lineitem.h
+        ${LINEDRAW_PATH}/linepath.h
 	
 	${LINEDRAW_PATH}/geoline.cpp
     	${LINEDRAW_PATH}/line.cpp 
     	${LINEDRAW_PATH}/linecollection.cpp 
-    	${LINEDRAW_PATH}/lineitem.cpp)
+        ${LINEDRAW_PATH}/lineitem.cpp
+        ${LINEDRAW_PATH}/linepath.cpp
+    )
 
 add_subdirectory(KmlImageTest)
 #add_subdirectory(KMLTest)

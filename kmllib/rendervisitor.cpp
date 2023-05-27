@@ -22,22 +22,6 @@ RenderVisitor::~RenderVisitor(){
   //  delete m_ptrStyles;
 }
 
-/*
-inline QGeoCoordinate operator-(const QGeoCoordinate& a, const QGeoCoordinate& b){
-    return QGeoCoordinate(a.latitude() - b.latitude(), a.longitude() - b.longitude());
-}
-
-inline QGeoCoordinate operator+(const QGeoCoordinate& a, const QGeoCoordinate& b){
-    return QGeoCoordinate(a.latitude() + b.latitude(), a.longitude() + b.longitude());
-}
-*/
-
-/*
-inline QPointF coordToPoint(const QGeoCoordinate& coord){
-    qDebug() << coord;
-    return QPointF(coord.latitude(), coord.longitude());
-}
-*/
 
 void RenderVisitor::insertPoints(const Graphics::GraphicsPtr& g, const QSizeF size, const QPointF& center, qreal zoomFactor) {
     PointList points;

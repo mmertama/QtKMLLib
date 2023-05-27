@@ -11,7 +11,7 @@
 using namespace QtKml;
 
 KmlQmlGraphicsPrivate::~KmlQmlGraphicsPrivate(){
-    for(const auto& r : m_renderers){
+    for(const auto& r : qAsConst(m_renderers)){
         r->d_ptr->freeMonitor(this);
     }
 }
@@ -26,8 +26,9 @@ void KmlQmlGraphicsPrivate::documentDeleted(const QString& id){
 
 
 KmlQmlRenderer* KmlQmlGraphicsPrivate::at(int index) const{
-    const auto key = m_renderers.keys()[index];
-    return m_renderers[key];
+    auto k = m_renderers.keyBegin();
+    std::advance(k, index);
+    return m_renderers[*k];
 }
 
 int KmlQmlGraphicsPrivate::append(const QString& id, KmlQmlRenderer* renderer){
@@ -59,7 +60,7 @@ void KmlQmlGraphicsPrivate::renderAll(QPainter& painter,  const QRect& rect, qre
     }
     painter.setBackgroundMode(Qt::TransparentMode);
   //  painter.fillRect(rect, Qt::transparent);
-    for(const auto& r : m_renderers){
+    for(const auto& r : qAsConst(m_renderers) ){
         if(filter == nullptr || filter(r->identifier())){
             r->d_ptr->doc()->renderAll(painter, rect, zoom, centerPoint);
         }

@@ -20,7 +20,7 @@ KmlQmlRendererPrivate::KmlQmlRendererPrivate(QObject* owner,
     m_graphics.clear();
     doc->getPolygons(m_graphics, m_styles);
     m_centerPoint = doc->centerPoint();
-    for(const auto g : m_graphics){
+    for(const auto& g : m_graphics){
         auto p = new KmlQmlElementPrivate(doc->customStyle(m_styles[g->styleId()], g->styleId()), g);
         m_list.append(new KmlQmlElement(owner, p));
     }

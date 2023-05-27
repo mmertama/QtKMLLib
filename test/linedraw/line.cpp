@@ -60,7 +60,7 @@ void Line::setOffset(int soff) {
 }
 
 
-void Line::clear(){
+void Line::clearLine(){
     m_p->vertices.clear();
     m_p->flags &= ~LinePrivate::VERTICES;
     emit lineChanged();
@@ -142,7 +142,7 @@ void Line::appendVertex(const QPointF& value){
     m_p->flags |= LinePrivate::VISUAL;
 }
 
-void Line::commit(){
+void Line::commitVertices(){
     emit lineChanged();
     emit verticesCountChanged(m_p->vertices.length());
 }

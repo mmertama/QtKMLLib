@@ -12,12 +12,10 @@ set(CMAKE_AUTORCC ON)
 
 qt_add_executable(${NAME}
 	mainwindow.cpp
-        main.cpp
-        linepath.cpp
-        polymesh.cpp
+    main.cpp
+    polymesh.cpp
 	mainwindow.h
-    	linepath.h
-    	polymesh.h
+    polymesh.h
 	${LINEDRAW}
 	mainwindow.ui
 	kmlimage.qrc

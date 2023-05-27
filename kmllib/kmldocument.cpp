@@ -93,11 +93,10 @@ void KmlDocumentPrivate::renderAll(QPainter& painter, const QRect& rect, qreal z
 
         QScopedPointer<RenderVisitor> visitor(RenderVisitor::create(*this, *this));
         kmldom::SimplePreorderDriver(visitor.data()).Visit(m_root);
-        const auto styles = visitor->styleList();
-        for(const auto key : styles.keys()){
-            StyleParams empty;
+        const auto& styles = visitor->styleList().keys();
+        for(const auto& key : styles){
             if(!m_customStyles.contains(key))
-                m_customStyles.insert(key, empty);
+                m_customStyles.insert(key, StyleParams{});
         }
         visitor->calculateProjection(rect.size(), centerPoint, zoom);
         visitor->render(painter);
@@ -120,20 +119,6 @@ void KmlDocumentPrivate::setStyles(const QString& styleId, const QVariantMap& st
         m_customStyles.insert(styleId, sp);
     }
     unite(m_customStyles[styleId], styleMap);
-/*
-    StyleParams& sp = m_customStyles[name];
-    if(styleMap.contains(KmlElement::LINE_WIDTH))
-        sp.lineWidth = styleMap[KmlElement::LINE_WIDTH].toDouble();
-    if(styleMap.contains(KmlElement::LINE_COLOR))
-        sp.lineColor = styleMap[KmlElement::LINE_COLOR].value<QColor>();
-    if(styleMap.contains(KmlElement::FILL_COLOR))
-        sp.fillColor = styleMap[KmlElement::FILL_COLOR].value<QColor>();
-    if(styleMap.contains(KmlElement::FILL))
-        sp.fill = styleMap[KmlElement::FILL].toBool();
-    if(styleMap.contains(KmlElement::ICON))
-        sp.icon = styleMap[KmlElement::ICON].toString();
-
-      qDebug() << "Style" << name << "changed" << sp.lineColor;*/
 }
 
 QVariantMap KmlDocumentPrivate::styles(const QString& name) const{
@@ -194,7 +179,7 @@ QVector<KmlElement> KmlDocument::elements() const {
         Graphics::GraphicsList graphics;
         StyleVisitor::StyleList styles;
         d->getPolygons(graphics, styles);
-        for(const auto g : graphics){
+        for(const auto& g : graphics){
             KmlElementPrivate* p = new KmlElementPrivate(d->customStyle(styles[g->styleId()], g->styleId()), g);
             elements->append(KmlElement(p));
         }
@@ -296,7 +281,7 @@ QStringList KmlDocument::urlRequests() const{
       kmldom::SimplePreorderDriver(visitor.data()).Visit(d->rootFeature());
 
       const auto values = styles.values();
-      for(const auto s : values){
+      for(const auto& s : values){
           if(!s.icon().isEmpty() && !d->m_data.contains(s.icon())){
               list.append(s.icon());
           }

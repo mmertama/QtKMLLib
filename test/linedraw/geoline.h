@@ -6,7 +6,7 @@
 
 namespace LineDraw {
 
-class GeoLine : public Line{
+class GeoLine : public Line {
     Q_OBJECT
 public:
     GeoLine(QObject* parent = nullptr);
@@ -16,7 +16,7 @@ public:
     bool appendVertices(const T<QGeoCoordinate>& coords){
         for (const auto& v : coords)
             appendVertex(v);
-        commit();
+        commitVertices();
         return len() == coords.length();
     }
 public slots:
@@ -49,9 +49,9 @@ signals:
     void geometryChangedAsync();
 protected:
     Line* build();
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+    void onGeometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
 private:
-    QGeoCoordinate m_center;
+    QGeoCoordinate m_center{};
     qreal m_zoom = 0;
     qreal m_lineWidth = 1; //1m !
 };

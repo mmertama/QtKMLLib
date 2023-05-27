@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     LineDraw::registerTypes();
 
     qmlRegisterType<Polymesh>("com.corp.mars", 1, 0, "Polymesh");
-    qmlRegisterType<LineDraw::LineDrawer>("LineDraw", 1, 0, "LineDrawer");
+    qmlRegisterType<LineDraw::LinePath>("LineDraw", 1, 0, "LineDrawer");
 
 
     ui->setupUi(this);
@@ -50,8 +50,8 @@ MainWindow::MainWindow(QWidget *parent) :
     });
 
     QObject::connect(this, &MainWindow::fileChanged, this, &MainWindow::showKml);
-    QObject::connect(ui->BorderColor, &QPushButton::clicked, [this](){this->showColorPicker(KmlElement::LINE_COLOR);});
-    QObject::connect(ui->FillColor, &QPushButton::clicked, [this](){this->showColorPicker(KmlElement::FILL_COLOR);});
+    QObject::connect(ui->BorderColor, &QPushButton::clicked, this, [this](){this->showColorPicker(KmlElement::LINE_COLOR);});
+    QObject::connect(ui->FillColor, &QPushButton::clicked, this, [this](){this->showColorPicker(KmlElement::FILL_COLOR);});
 
     m_kmlGraphics = new KmlQmlGraphics(this);
     ui->kmlMapQtQuick->rootContext()->setContextProperty("kmlgraphics", m_kmlGraphics);
@@ -62,19 +62,18 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->mapQtQuick->engine()->addImageProvider(QLatin1String("kmlimage"),  new KmlQmlImage(m_kmlGraphics->qmlImage()));
     ui->mapQtQuick->rootContext()->setContextProperty("kmlgraphics", m_kmlGraphics);
     ui->mapQtQuick->setSource(QUrl("qrc:/mapTest.qml"));
-    m_accessManager = new QNetworkAccessManager();
 
     ui->quickItemMap->rootContext()->setContextProperty("kmlgraphics", m_kmlGraphics);
     ui->quickItemMap->setSource(QUrl("qrc:/quickItemTest.qml"));
 
 
-    QObject::connect(m_kmlGraphics, &KmlQmlGraphics::documentAdded, [this](const QString& id){
+    QObject::connect(m_kmlGraphics, &KmlQmlGraphics::documentAdded, this, [this](const QString& id){
        m_kmlId = id;
     });
 
 
 
-    QObject::connect(m_kmlGraphics, &KmlQmlGraphics::renderersChanged, [this]{
+    QObject::connect(m_kmlGraphics, &KmlQmlGraphics::renderersChanged, this, [this]{
         const QFileInfo kml(m_currentDoc);
         const auto json = kml.path() + '/' + kml.baseName() + ".json";
         if(QFileInfo::exists(json)){
@@ -83,14 +82,15 @@ MainWindow::MainWindow(QWidget *parent) :
         startLineDraw();
     });
 
-    QObject::connect(&m_timer, &QTimer::timeout, [this](){
-     //   qDebug() << "add point" << m_index;
+    QObject::connect(&m_timer, &QTimer::timeout, this, [this](){
+        //qDebug() << "add point" << m_index;
         auto line0 = ui->quickItemMap->rootObject()->findChild<LineDraw::GeoLines*>("drawLines");
         auto line1 = ui->mapQtQuick->rootObject()->findChild<LineDraw::LineItem*>("workLines");
         Q_ASSERT(line0);
         Q_ASSERT(line1);
         auto noMorePoints = true;
-        for(const auto& k : m_paths.keys()){
+        for(auto it = m_paths.keyBegin(); it != m_paths.keyEnd(); ++it){
+            const auto k = *it;
             const auto p = m_paths[k];
             if(m_index < p.length()){
                 noMorePoints = false;
@@ -98,19 +98,18 @@ MainWindow::MainWindow(QWidget *parent) :
                 auto path1 = line1->path(k);
                 Q_ASSERT(path0);
                 Q_ASSERT(path1);
-             //   qDebug() << p[m_index];
                 path0->appendVertex(p[m_index].first);
                 path1->appendVertex(p[m_index].second);
             }
         }
-        line1->commit();
-        line0->commit();
+        line1->commitVertices();
+        line0->commitVertices();
         ++m_index;
         if(noMorePoints)
             m_timer.stop();
     });
 
-    QObject::connect(ui->mapQtQuick, &QQuickWidget::statusChanged, [this](const QQuickWidget::Status& status) {
+    QObject::connect(ui->mapQtQuick, &QQuickWidget::statusChanged, this, [this](const QQuickWidget::Status& status) {
         if( status == QQuickWidget::Ready ) {
             Q_ASSERT(ui->mapQtQuick->rootObject());
             const auto mapItem = ui->mapQtQuick->rootObject()->findChild<QObject*>("map");
@@ -148,7 +147,7 @@ void MainWindow::showColorPicker(const QString& item){
             auto dlg = new QColorDialog(color, this);
             dlg->setOption(QColorDialog::ShowAlphaChannel, true);
             dlg->open();
-            QObject::connect(dlg, &QColorDialog::colorSelected, [doc, element, item] (const QColor & color) mutable{
+            QObject::connect(dlg, &QColorDialog::colorSelected, this, [doc, element, item] (const QColor & color) mutable{
                 doc->setStyles(element.styleName(), QVariantMap({{item, color}}));
             });
         }
@@ -163,13 +162,12 @@ void MainWindow::showKml(const QString& filename){
     if(file.open(QFile::ReadOnly) && doc->open(file)){
         //Check if KML file has some HTTP requests (e.g. pin point images to retrieve)
         //This is optional
-        for(auto ss : doc->urlRequests()){
+        for(const auto& ss : doc->urlRequests()){
             //get external data
-            QUrl url;
-            url.setUrl(ss);
+            const QUrl url{ss};
             QNetworkRequest request(url);
-            QNetworkReply* reply =  m_accessManager->get(request);
-            QObject::connect(reply, &QNetworkReply::finished, [reply, ss, doc](){
+            QNetworkReply* reply =  m_accessManager.get(request);
+            QObject::connect(reply, &QNetworkReply::finished, this, [reply, ss, doc](){
                 doc->setData(ss, reply->readAll());
                 reply->deleteLater();
             });
@@ -182,7 +180,7 @@ void MainWindow::showKml(const QString& filename){
         ui->imageLabel->setPixmap(doc->render(sz, doc->naturalZoom(sz)));
         //add for QML rendering
         m_kmlGraphics->append(doc, KML);
-        QObject::connect(doc, &KmlDocument::documentChanged, [this, doc, sz](){
+        QObject::connect(doc, &KmlDocument::documentChanged, this, [this, doc, sz](){
             ui->imageLabel->setPixmap(doc->render(sz, doc->naturalZoom((sz))));
         });
     }
@@ -252,7 +250,7 @@ void MainWindow::showJson(const QString& filename, const QString& id){
         auto centerPoint = KmlDocument::project(field.center(),  zoomLevel , QPointF(0, 0));
         centerPoint -= QPointF(line1Item->width() * 0.5, line1Item->height() * 0.5);
 
-        for(const auto v : field.vertices()){
+        for(const auto& v : field.vertices()){
             const auto p = QtKml::KmlDocument::project(QGeoCoordinate(v), zoomLevel, centerPoint);
             qDebug() << v.longitude << v.latitude << "->" << p << zoomLevel;
             m_field.append(p);
@@ -263,8 +261,8 @@ void MainWindow::showJson(const QString& filename, const QString& id){
             const auto o = v.toObject();
             const auto seederId = o["seederId"].toString();
             Q_ASSERT(!seederId.isEmpty());
-            const auto executionDistance = o["executionDistance"].toString();
-            const auto executionTime = o["executionTime"].toString();
+            //const auto executionDistance = o["executionDistance"].toString();
+            //const auto executionTime = o["executionTime"].toString();
             const auto path = o["path"].toArray();
             QList<QPair<QGeoCoordinate, QPointF>> coords;
             for(const auto& c : path){
@@ -292,17 +290,17 @@ void MainWindow::startLineDraw(){
     auto lines1 = ui->mapQtQuick->rootObject()->findChild<LineDraw::LineItem*>("workLines");
     Q_ASSERT(lines1);
 
-    for(const auto& pnames : m_paths.keys()){
-        if(!lines1->path(pnames)){
-            auto p = lines1->append(pnames);
+    for(auto it = m_paths.keyBegin(); it != m_paths.keyEnd(); ++it){
+        if(!lines1->path(*it)){
+            auto p = lines1->append(*it);
             Q_ASSERT(p);
             p->setColor(QColor(rand() & 0xFF, rand() & 0xFF, rand() & 0xFF));   
         }
     }
 
-    for(const auto& pnames : m_paths.keys()){
-        if(!lines0->path(pnames)){
-            auto p = lines0->append(pnames);
+    for(auto it = m_paths.keyBegin(); it != m_paths.keyEnd(); ++it){
+        if(!lines0->path(*it)){
+            auto p = lines0->append(*it);
             Q_ASSERT(p);
             p->setColor(/*QColor(rand() & 0xFF, rand() & 0xFF, rand() & 0xFF)*/Qt::gray);
         }

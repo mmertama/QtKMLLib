@@ -13,7 +13,9 @@ class LinePainter;
 
 void registerTypes();
 
-class Line : public QObject{
+
+
+class Line : public QObject {
     Q_OBJECT
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
     Q_PROPERTY(qreal thickness READ thickness WRITE setThickness NOTIFY thicknessChanged)
@@ -43,8 +45,8 @@ public slots:
     void insert(int index, const QVector<QPointF>& values);
     void append(const QVector<QPointF>& values);
     void appendVertex(const QPointF& value);
-    void clear();
-    void commit();
+    void clearLine();
+    void commitVertices();
 public:
     QColor color() const;
     void setColor(const QColor& color);
@@ -71,7 +73,7 @@ public:
     VertexPtr vertices() const;
 protected:
     QScopedPointer<LinePrivate> m_p;
-    friend class LinePainter;
+    friend class LineInterface;
 };
 
 class LinePainter{
@@ -82,9 +84,8 @@ public:
     virtual QRecursiveMutex* mutex() = 0;
     virtual Line* build() = 0;
     virtual ~LinePainter() = default;
-protected:
-    static LinePrivate* p(Line* p) {return p->m_p.data();}
 };
+
 
 }
 
